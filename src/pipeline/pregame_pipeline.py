@@ -74,13 +74,6 @@ def run_recommend_logic(turn_info):
     print(f"노랑 감지: {turn_info['is_my_turn']}")
     print("조건 만족 -> 추천 시작")
 
-    # TODO:
-    # 여기서 실제 추천 함수 연결
-    # 예:
-    # recommend_pick(...)
-    # build_recommendation(...)
-    # save_recommend_result(...)
-
 
 def run_pregame_pipeline():
     image_paths = list_images(RAW_PREGAME_DIR)
@@ -98,9 +91,6 @@ def run_pregame_pipeline():
             print(f"[실패] 이미지 읽기 실패: {image_path.name}")
             continue
 
-        # =========================
-        # 1) 턴 감지
-        # =========================
         turn_info = detect_turn_slot(img)
 
         print("[TURN RAW]")
@@ -145,9 +135,6 @@ def run_pregame_pipeline():
         elif is_next:
             print("  다음이 내 픽 차례")
 
-        # =========================
-        # 2) 추천 로직 실행 조건
-        # =========================
         should_run_recommend = (
             turn_info["is_ally_pick_turn"] and
             turn_info["is_my_turn"]
@@ -160,9 +147,6 @@ def run_pregame_pipeline():
         else:
             print("추천 로직 실행 안 함")
 
-        # =========================
-        # 3) 턴 ROI 저장
-        # =========================
         ally_roi_img = crop_ally_turn_roi(img)
         ally_roi_path = DEBUG_PREVIEW_DIR / f"{image_path.stem}__ALLY_TURN_ROI.png"
         save_image(ally_roi_path, ally_roi_img)
@@ -173,26 +157,17 @@ def run_pregame_pipeline():
         save_image(enemy_roi_path, enemy_roi_img)
         print(f"[ENEMY TURN ROI 저장] {enemy_roi_path}")
 
-        # =========================
-        # 4) 턴 디버그 이미지 저장
-        # =========================
         turn_debug = draw_turn_debug(img, turn_info)
         turn_debug_path = DEBUG_PREVIEW_DIR / f"{image_path.stem}__TURN_DEBUG.png"
         save_image(turn_debug_path, turn_debug)
         print(f"[TURN DEBUG 저장] {turn_debug_path}")
 
-        # =========================
-        # 5) 기존 슬롯 crop 저장
-        # =========================
         export_slots_from_image(
             img=img,
             image_stem=image_path.stem,
             original_name=image_path.name,
         )
 
-        # =========================
-        # 6) crop된 슬롯 매칭
-        # =========================
         ally_dir = DATASET_DIR / "champion" / "pick_crop" / "ally_picks"
         enemy_dir = DATASET_DIR / "champion" / "pick_crop" / "enemy_picks"
 

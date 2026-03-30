@@ -51,7 +51,6 @@ def preprocess_role_icon(img):
     gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray, 80, 160)
 
-    # 원형 마스크
     mask = np.zeros((ROLE_MATCH_SIZE, ROLE_MATCH_SIZE), dtype=np.uint8)
     c = ROLE_MATCH_SIZE // 2
     r = int(ROLE_MATCH_SIZE * 0.42)
@@ -104,9 +103,6 @@ def score_pair(q, c):
 
 
 def is_role_icon(img):
-    """
-    단색/저디테일이면 역할 아이콘일 가능성이 높음
-    """
     if img is None:
         return False
 
@@ -123,7 +119,6 @@ def is_role_icon(img):
     edges = cv2.Canny(gray, 80, 160)
     edge_ratio = float(np.count_nonzero(edges)) / float(edges.size)
 
-    # 역할 아이콘은 대개 단색 + 엣지 적당
     if std < 28 and edge_ratio < 0.18:
         return True
 
