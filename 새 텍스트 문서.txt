@@ -1,0 +1,47 @@
+lol_ai_coach/
+
+├─ main.py                         → 프로그램 시작 / 전체 실행 진입점
+
+├─ controller/
+│  └─ pregame_controller.py        → 전체 흐름 제어 (루프, 단계 판단, 실행 타이밍 관리)
+
+├─ core/
+│  ├─ capture/
+│  │   ├─ screen_source.py         → 실제 화면 캡처 (PIL/mss 등)
+│  │
+│  ├─ vision/
+│  │   ├─ roi_extractor.py         → 화면에서 필요한 영역(ROI) 자르기
+│  │   ├─ portrait_checker.py      → 초상화 존재 여부 판단
+│  │   ├─ color_checker.py         → 특정 영역 색상 판별 (빨강 여부 등)
+│  │   ├─ pick_stage_detector.py   → 픽 단계인지 최종 판단 (portrait + color 조합)
+│  │   └─ change_detector.py       → 이전 프레임 vs 현재 프레임 변화 감지
+│  │
+│  ├─ pipeline/
+│  │   └─ pregame_pipeline.py      → vision 모듈 묶어서 한 번에 실행하는 중간 계층
+│  │
+│  └─ logic/
+│      └─ pick_logic.py            → 챔피언 분석 / 추천 계산 / 결과 생성
+│
+├─ data/
+│  ├─ config.json                  → ROI 좌표, threshold, 설정값
+│  └─ champions/
+│      └─ champion_stats.json      → 챔피언 능력치/데이터 (추천 계산용)
+│
+├─ shared/
+│  └─ app_state.py                 → 프로그램 전체 상태 저장 (현재 단계, ROI, 결과 등)
+│
+├─ assets/
+│  ├─ portraits/                  → 챔피언 초상화 이미지
+│  ├─ templates/                  → 매칭용 템플릿 이미지
+│  └─ icons/                      → UI/기타 아이콘
+│
+├─ debug/
+│  ├─ captures/                   → 전체 프레임 저장 (디버깅용)
+│  ├─ roi/                        → 잘라낸 ROI 저장
+│  ├─ matched/                    → 매칭 결과 이미지
+│  ├─ changes/                    → 변화 감지 결과 저장
+│  ├─ stage/                      → 단계 판별 결과 저장
+│  └─ logs/                       → 로그 파일
+│
+└─ ui/
+   └─ main_window.py              → 결과 표시 UI (그래프, 추천, 상태 표시)
