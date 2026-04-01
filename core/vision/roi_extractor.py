@@ -1,24 +1,25 @@
 from pathlib import Path
 import cv2
-import numpy as np
 
 
 class ROIExtractor:
     def __init__(self):
         base_dir = Path(__file__).resolve().parents[2]
-
-        # debug/roi/0 폴더
         self.debug_dir = base_dir / "debug" / "roi" / "0"
         self.debug_dir.mkdir(parents=True, exist_ok=True)
-
         self.counter = 0
 
     def extract(self, frame, roi_box):
         if frame is None:
             return None
 
-        x1, y1, x2, y2 = roi_box
+        x1_ratio, y1_ratio, x2_ratio, y2_ratio = roi_box
         h, w = frame.shape[:2]
+
+        x1 = int(w * x1_ratio)
+        y1 = int(h * y1_ratio)
+        x2 = int(w * x2_ratio)
+        y2 = int(h * y2_ratio)
 
         x1 = max(0, min(x1, w - 1))
         y1 = max(0, min(y1, h - 1))
@@ -27,7 +28,6 @@ class ROIExtractor:
 
         roi = frame[y1:y2, x1:x2]
 
-        # 🔥 디버그 저장
         self._save_debug(roi)
 
         return roi
@@ -40,9 +40,7 @@ class ROIExtractor:
             filename = f"roi_{self.counter:04d}.png"
             path = self.debug_dir / filename
 
-            # 한글 경로 안전 저장
             cv2.imencode(".png", roi)[1].tofile(str(path))
-
             print(f"[ROIExtractor] 저장: {path}")
 
             self.counter += 1

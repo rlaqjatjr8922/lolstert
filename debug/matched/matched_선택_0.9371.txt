@@ -1,0 +1,2 @@
+template=선택.jpg
+score=0.9371
