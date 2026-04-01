@@ -1,2 +1,0 @@
-template=미선택.jpg
-score=0.8770
