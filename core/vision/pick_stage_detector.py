@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 class PickStageDetector:
     def is_pick_stage(self, portrait_ok: bool, is_red: bool) -> bool:
         # 기본 규칙:

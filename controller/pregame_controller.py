@@ -28,20 +28,10 @@ class PregameController:
     def run(self):
         print("[PregameController] run")
 
+        print("1. 화면 캡처 시작")
         self.screen_source.start()
 
-        true_count = 0
-
-        while true_count < 5:
-            result = self.pipeline.run()
-
-            if result:
-                true_count += 1
-                print(f"[PregameController] TRUE ({true_count}/5)")
-            else:
-                print("[PregameController] FALSE")
-
-        self.app_state.current_stage += 1
-        print("[PregameController] stage →", self.app_state.current_stage)
+        print("2. pregame_pipeline 실행")
+        self.pipeline.run()
 
         print("[PregameController] done")

@@ -6,15 +6,17 @@ import numpy as np
 
 
 class ScreenSource:
-    def __init__(self):
+    def __init__(self, debug=False, debug_dir="debug"):
         self.scrcpy_path = r"C:\scrcpy-win64-v3.3.3\scrcpy.exe"
         self.process = None
 
-        base_dir = Path(__file__).resolve().parents[2]
-        self.debug_dir = base_dir / "debug" / "captures"
-        self.debug_dir.mkdir(parents=True, exist_ok=True)
-
+        # 디버그 설정
+        self.debug = debug
+        self.debug_dir = Path(debug_dir) / "captures"
         self.capture_count = 0
+
+        if self.debug:
+            self.debug_dir.mkdir(parents=True, exist_ok=True)
 
     def start(self):
         try:
@@ -45,23 +47,21 @@ class ScreenSource:
                 print("[ScreenSource] frame decode 실패")
                 return None
 
-            self._save_debug(frame)
+            # -------------------------
+            # 🔥 디버그: 원본 저장
+            # -------------------------
+            if self.debug:
+                filename = f"capture_{self.capture_count:04d}.png"
+                save_path = self.debug_dir / filename
+
+                cv2.imwrite(str(save_path), frame)
+
+                print(f"[ScreenSource] debug 저장: {save_path}")
+
+                self.capture_count += 1
 
             return frame
 
         except Exception as e:
             print(f"[ScreenSource] capture 오류: {e}")
             return None
-
-    def _save_debug(self, frame):
-        try:
-            filename = f"capture_{self.capture_count:04d}.png"
-            path = self.debug_dir / filename
-
-            cv2.imencode(".png", frame)[1].tofile(str(path))
-            print(f"[ScreenSource] debug 저장: {path}")
-
-            self.capture_count += 1
-
-        except Exception as e:
-            print(f"[ScreenSource] debug 저장 실패: {e}")

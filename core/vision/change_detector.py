@@ -5,7 +5,6 @@ from pathlib import Path
 
 import numpy as np
 
-
 class ChangeDetector:
     def __init__(self):
         config_path = Path(__file__).resolve().parents[2] / "data" / "config.json"
