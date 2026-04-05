@@ -21,10 +21,6 @@ class DetectStage:
         return os.path.basename(template_name)
 
     def _xywh_to_xyxy_ratio(self, roi_box):
-        """
-        config stage 2의 roi는 [x, y, w, h] 비율 형식으로 들어오므로
-        ROIExtractor가 이해하는 [x1, y1, x2, y2]로 변환
-        """
         if roi_box is None:
             return None
 
@@ -56,9 +52,6 @@ class DetectStage:
 
             app_state.current_frame = frame
 
-            # -------------------------
-            # stage 2 : StickChecker
-            # -------------------------
             if self.stage_key == "2":
                 ally_roi_box_xywh = stage.get("ally_turn_bar_roi")
                 enemy_roi_box_xywh = stage.get("enemy_turn_bar_roi")
@@ -110,9 +103,6 @@ class DetectStage:
                 print(f"[DetectStage {self.stage_key}] matched_template_path: {template_name}")
                 print(f"[DetectStage {self.stage_key}] matched_score: {score}")
 
-            # -------------------------
-            # stage 0, 1 : TextTemplateChecker
-            # -------------------------
             else:
                 roi_box = stage.get("writing")
                 template_paths = stage.get("template_path", [])
@@ -201,10 +191,6 @@ class PregamePipeline:
         with open(self.config_path, "r", encoding="utf-8") as f:
             self.config = json.load(f)
 
-        # -------------------------
-        # setting.json 읽기
-        # 형식: {"debug": true}
-        # -------------------------
         self.setting_path = base_dir / "data" / "setting.json"
         print("[PregamePipeline] setting_path =", self.setting_path)
         print("[PregamePipeline] setting_exists =", self.setting_path.exists())
@@ -222,7 +208,6 @@ class PregamePipeline:
         self.debug_enabled = setting.get("debug", True)
         print("[PregamePipeline] debug_enabled =", self.debug_enabled)
 
-        # app_state 기본값
         if not hasattr(self.app_state, "stage_results"):
             self.app_state.stage_results = {}
 
@@ -247,11 +232,9 @@ class PregamePipeline:
         if not hasattr(self.app_state, "gpt_answer"):
             self.app_state.gpt_answer = None
 
-        # 디버그 설정 전달
         self.app_state.debug_enabled = self.debug_enabled
         self.app_state.debug_dir = str(base_dir / "debug")
 
-        # debug 폴더는 ON일 때만 생성
         if self.debug_enabled:
             debug_dir = base_dir / "debug"
             debug_dir.mkdir(parents=True, exist_ok=True)
@@ -259,12 +242,20 @@ class PregamePipeline:
         else:
             print("[PregamePipeline] debug OFF")
 
-        self.roi_extractor = ROIExtractor()
+        self.roi_extractor = ROIExtractor(
+            debug=self.app_state.debug_enabled,
+            debug_dir=self.app_state.debug_dir
+        )
         self.text_checker = TextTemplateChecker()
         self.stick_checker = StickChecker(
             debug=self.debug_enabled,
             slot_count=5
         )
+
+        print("[PregamePipeline] roi_extractor.debug =", self.roi_extractor.debug)
+        print("[PregamePipeline] roi_extractor.debug_dir =", self.roi_extractor.debug_dir)
+        print("[PregamePipeline] screen_source.debug =", getattr(self.screen_source, "debug", None))
+        print("[PregamePipeline] screen_source.debug_dir =", getattr(self.screen_source, "debug_dir", None))
 
         self.stages = [
             DetectStage("0", self.config, self.roi_extractor, self.text_checker),

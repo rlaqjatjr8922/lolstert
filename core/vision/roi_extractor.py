@@ -1,7 +1,35 @@
 import cv2
+from pathlib import Path
 
 
 class ROIExtractor:
+    def __init__(self, debug=False, debug_dir="debug"):
+        self.debug = debug
+        self.debug_dir = Path(debug_dir) / "roi"
+        self.roi_count = 0
+
+        if self.debug:
+            self.debug_dir.mkdir(parents=True, exist_ok=True)
+
+        print("[ROIExtractor] debug =", self.debug)
+        print("[ROIExtractor] debug_dir =", self.debug_dir)
+
+    def _save_debug_image(self, save_path, image):
+        try:
+            ext = save_path.suffix
+            success, encoded = cv2.imencode(ext, image)
+
+            if not success:
+                print(f"[ROIExtractor] imencode 실패: {save_path}")
+                return False
+
+            encoded.tofile(str(save_path))
+            return True
+
+        except Exception as e:
+            print(f"[ROIExtractor] 저장 오류: {e}")
+            return False
+
     def extract(self, frame, roi_box):
         if frame is None or roi_box is None:
             return None
@@ -31,4 +59,18 @@ class ROIExtractor:
         if roi.size == 0:
             return None
 
-        return roi.copy()
+        roi = roi.copy()
+
+        if self.debug:
+            filename = f"roi_{self.roi_count:04d}.png"
+            save_path = self.debug_dir / filename
+
+            saved = self._save_debug_image(save_path, roi)
+
+            if saved:
+                print(f"[ROIExtractor] 저장 성공: {save_path}")
+                self.roi_count += 1
+            else:
+                print(f"[ROIExtractor] 저장 실패: {save_path}")
+
+        return roi

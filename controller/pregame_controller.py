@@ -1,3 +1,4 @@
+import json
 import shutil
 from pathlib import Path
 
@@ -9,21 +10,51 @@ class PregameController:
     def __init__(self, app_state):
         self.app_state = app_state
 
+        self.base_dir = Path(__file__).resolve().parents[1]
+        self.debug_dir = self.base_dir / "debug"
+        self.setting_path = self.base_dir / "data" / "setting.json"
+
+        self.debug_enabled = self._load_debug_setting()
+
+        self.app_state.debug_enabled = self.debug_enabled
+        self.app_state.debug_dir = str(self.debug_dir)
+
         self._clear_debug()
 
-        self.screen_source = ScreenSource()
+        self.screen_source = ScreenSource(
+            debug=self.debug_enabled,
+            debug_dir=self.app_state.debug_dir
+        )
+
         self.pipeline = PregamePipeline(app_state, self.screen_source)
 
-    def _clear_debug(self):
-        base_dir = Path(__file__).resolve().parents[1]
-        debug_dir = base_dir / "debug"
+    def _load_debug_setting(self):
+        if self.setting_path.exists():
+            try:
+                with open(self.setting_path, "r", encoding="utf-8") as f:
+                    setting = json.load(f)
 
-        if debug_dir.exists():
-            shutil.rmtree(debug_dir)
+                debug_value = setting.get("debug", True)
+                print("[PregameController] debug_enabled =", debug_value)
+                return debug_value
+
+            except Exception as e:
+                print("[PregameController] setting.json 로드 실패 -> 기본값 True:", e)
+                return True
+
+        print("[PregameController] setting.json 없음 -> 기본값 True")
+        return True
+
+    def _clear_debug(self):
+        if self.debug_dir.exists():
+            shutil.rmtree(self.debug_dir)
             print("[PregameController] debug 폴더 삭제")
 
-        debug_dir.mkdir(parents=True, exist_ok=True)
-        print("[PregameController] debug 폴더 생성")
+        if self.debug_enabled:
+            self.debug_dir.mkdir(parents=True, exist_ok=True)
+            print("[PregameController] debug 폴더 생성")
+        else:
+            print("[PregameController] debug OFF")
 
     def run(self):
         print("[PregameController] run")
